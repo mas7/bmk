@@ -27,6 +27,7 @@ class PropertyResource extends Resource
             ->schema([
                 TextInput::make('name')
                     ->required()
+                    ->autofocus()
                     ->maxLength(255),
                 TextInput::make('location')
                     ->required()
@@ -35,7 +36,8 @@ class PropertyResource extends Resource
                     ->required()
                     ->numeric()
                     ->minValue(1)
-                    ->suffix('QR'),
+                    ->suffix('QR')
+                    ->columnSpan('full'),
             ]);
     }
 
@@ -57,7 +59,9 @@ class PropertyResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -78,7 +82,13 @@ class PropertyResource extends Resource
         return [
             'index' => Pages\ListProperties::route('/'),
             'create' => Pages\CreateProperty::route('/create'),
+            'view' => Pages\ViewProperty::route('/{record}'),
             'edit' => Pages\EditProperty::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }
