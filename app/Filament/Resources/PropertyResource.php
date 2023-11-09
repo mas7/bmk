@@ -6,6 +6,7 @@ use App\Filament\Resources\PropertyResource\Pages;
 use App\Filament\Resources\PropertyResource\RelationManagers;
 use App\Models\Property;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -38,6 +39,11 @@ class PropertyResource extends Resource
                     ->minValue(1)
                     ->suffix('QR')
                     ->columnSpan('full'),
+                Select::make('client')
+                    ->relationship('client', 'name')
+                    ->preload()
+                    ->searchable()
+                    ->columnSpanFull()
             ]);
     }
 
@@ -54,6 +60,12 @@ class PropertyResource extends Resource
                 TextColumn::make('rent_amount')
                     ->money("QAR")
                     ->sortable(),
+                TextColumn::make('client.name')
+                    ->badge()
+                    ->placeholder('No client')
+                    ->color(fn (string $state): string => match ($state) {
+                        default => 'warning'
+                    })
             ])
             ->filters([
                 //
