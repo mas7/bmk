@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('location');
             $table->string('rent_amount');
+            $table->unsignedBigInteger('client_id')->nullable();
+            $table->foreign('client_id')->references('id')->on('users')->constrained();
             $table->timestamps();
         });
     }
