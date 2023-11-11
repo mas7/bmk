@@ -71,6 +71,10 @@ class User extends Authenticatable implements FilamentUser
             return $this->roles->contains('name', 'client');
         }
 
+        if ($panel->getId() === 'contractor') {
+            return $this->roles->contains('name', 'contractor');
+        }
+
         return false;
     }
 }
