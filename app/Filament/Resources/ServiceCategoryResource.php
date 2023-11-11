@@ -21,7 +21,7 @@ class ServiceCategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static ?string $navigationGroup = 'Services';
+    protected static ?string $navigationGroup = 'Contractors';
 
     public static function form(Form $form): Form
     {
@@ -70,5 +70,10 @@ class ServiceCategoryResource extends Resource
             'create' => Pages\CreateServiceCategory::route('/create'),
             'edit' => Pages\EditServiceCategory::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
     }
 }
