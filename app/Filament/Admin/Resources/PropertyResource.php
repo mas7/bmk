@@ -17,7 +17,9 @@ class PropertyResource extends Resource
 {
     protected static ?string $model = Property::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?string $navigationGroup = 'Properties';
 
     public static function form(Form $form): Form
     {
@@ -30,17 +32,6 @@ class PropertyResource extends Resource
                 TextInput::make('location')
                     ->required()
                     ->maxLength(255),
-                TextInput::make('rent_amount')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->suffix('QR')
-                    ->columnSpan('full'),
-                Select::make('client')
-                    ->relationship('client', 'name')
-                    ->preload()
-                    ->searchable()
-                    ->columnSpanFull()
             ]);
     }
 
@@ -55,12 +46,16 @@ class PropertyResource extends Resource
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('rent_amount')
-                    ->money("QAR")
+                    ->placeholder('~')
+                    ->prefix('QAR ')
+                    ->numeric(
+                        decimalPlaces: 0,
+                    )
                     ->sortable(),
                 TextColumn::make('client.name')
                     ->badge()
-                    ->placeholder('No client')
-                    ->color(fn (string $state): string => match ($state) {
+                    ->placeholder('~')
+                    ->color(fn(string $state): string => match ($state) {
                         default => 'warning'
                     })
             ])

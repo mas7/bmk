@@ -69,7 +69,8 @@ class TicketResource extends Resource
                     ->options(TicketStatus::class),
                 DateTimePicker::make('expected_visit_at')
                     ->label('Expected visit date')
-                    ->required(),
+                    ->required()
+                    ->native(false),
                 Textarea::make('description')
                     ->rows(4)
                     ->placeholder('Write a small brief about the issue...')

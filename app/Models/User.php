@@ -125,4 +125,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->contractor->status === ContractorStatus::ACTIVE;
     }
+
+    public function scopeDoesntHaveProperty(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('properties');
+    }
 }

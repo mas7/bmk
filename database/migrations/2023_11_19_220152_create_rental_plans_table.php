@@ -10,12 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('properties', function (Blueprint $table) {
+        Schema::create('rental_plans', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('location');
-            $table->integer('rent_amount')->nullable();
-            $table->foreignId('client_id')->nullable()->constrained('users', 'id');
+            $table->foreignId('property_id');
+            $table->foreignId('client_id')->constrained('users', 'id');
+            $table->dateTime('start_date');
+            $table->dateTime('end_date');
+            $table->integer('monthly_rent');
+            $table->unsignedTinyInteger('status');
             $table->timestamps();
         });
     }
@@ -25,6 +27,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('properties');
+        Schema::dropIfExists('rental_plans');
     }
 };
