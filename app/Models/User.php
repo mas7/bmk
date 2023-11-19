@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use App\Enums\ContractorStatus;
+use App\Enums\TicketStatus;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Builder;
@@ -107,7 +109,7 @@ class User extends Authenticatable implements FilamentUser
             return $this->roles->contains('name', 'client');
         }
 
-        if ($panel->getId() === 'contractor') {
+        if ($panel->getId() === 'contractor' && $this->isContractorActive) {
             return $this->roles->contains('name', 'contractor');
         }
 
@@ -117,5 +119,10 @@ class User extends Authenticatable implements FilamentUser
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function getIsContractorActiveAttribute(): bool
+    {
+        return $this->contractor->status === ContractorStatus::ACTIVE;
     }
 }
