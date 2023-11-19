@@ -69,6 +69,9 @@ class ContractorPanelProvider extends PanelProvider
                         ], // you may pass an array of validation rules as well. (default = ['min:8'])
                         requiresCurrentPassword: false, // when false, the user can update their password without entering their current password. (default = true)
                     )
-            ]);
+            ])
+            ->brandLogo(fn() => view('filament.admin.logo', [
+                'roleName' => 'Contractor'
+            ]));
     }
 }

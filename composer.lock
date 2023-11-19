@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b62cdabf9adee35f2ea1490b4562c048",
+    "content-hash": "98e5d6e2dae9ff01bd4fd16779943b4a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -5095,6 +5095,87 @@
                 }
             ],
             "time": "2023-02-14T16:54:54+00:00"
+        },
+        {
+            "name": "saade/filament-autograph",
+            "version": "v3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/saade/filament-autograph.git",
+                "reference": "1aa827a57ccf786281e2fe11d35563d69b89a216"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/saade/filament-autograph/zipball/1aa827a57ccf786281e2fe11d35563d69b89a216",
+                "reference": "1aa827a57ccf786281e2fe11d35563d69b89a216",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^3.0",
+                "filament/forms": "^3.0",
+                "illuminate/contracts": "^10.0",
+                "php": "^8.1",
+                "spatie/laravel-package-tools": "^1.15.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.0",
+                "nunomaduro/collision": "^7.9",
+                "nunomaduro/larastan": "^2.0.1",
+                "orchestra/testbench": "^8.0",
+                "pestphp/pest": "^2.0",
+                "pestphp/pest-plugin-arch": "^2.0",
+                "pestphp/pest-plugin-laravel": "^2.0",
+                "phpstan/extension-installer": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0",
+                "phpstan/phpstan-phpunit": "^1.0",
+                "spatie/laravel-ray": "^1.26"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Saade\\FilamentAutograph\\FilamentAutographServiceProvider"
+                    ],
+                    "aliases": {
+                        "FilamentAutograph": "Saade\\FilamentAutograph\\Facades\\FilamentAutograph"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Saade\\FilamentAutograph\\": "src/",
+                    "Saade\\FilamentAutograph\\Database\\Factories\\": "database/factories/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Saade",
+                    "email": "saade@outlook.com.br",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A Filament package to manage signatures.",
+            "homepage": "https://github.com/saade/filament-autograph",
+            "keywords": [
+                "filament-autograph",
+                "laravel",
+                "saade"
+            ],
+            "support": {
+                "issues": "https://github.com/saade/filament-autograph/issues",
+                "source": "https://github.com/saade/filament-autograph"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/saade",
+                    "type": "github"
+                }
+            ],
+            "time": "2023-10-18T13:07:29+00:00"
         },
         {
             "name": "spatie/color",
@@ -10464,5 +10545,5 @@
         "php": "^8.1"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.3.0"
 }
