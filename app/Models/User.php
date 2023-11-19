@@ -6,14 +6,17 @@ namespace App\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/** @property Collection properties */
 class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -60,6 +63,39 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Contractor::class);
     }
 
+    public function scopeSuperAdmin(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'roles',
+            fn(Builder $query) => $query->where('name', 'super_admin')
+        );
+    }
+
+    public function scopeClients(Builder $query): Builder
+    {
+        return $query->whereHas(
+            'roles',
+            fn(Builder $query) => $query->where('name', 'client')
+        );
+    }
+
+    public function scopeContractors(Builder $query, int $serviceCategoryId = null): Builder
+    {
+        return $query->whereHas(
+            'roles',
+            fn(Builder $query) => $query->where('name', 'contractor')
+        )
+            ->when(
+                $serviceCategoryId,
+                fn(Builder $query) => $query->whereHas('contractor', fn(Builder $query) => $query->where('service_category_id', $serviceCategoryId))
+            );
+    }
+
+    public function scopeHasProperty(Builder $query): Builder
+    {
+        return $query->whereHas('properties');
+    }
+
     // TODO: redirect to roles route
     public function canAccessPanel(Panel $panel): bool
     {
@@ -76,5 +112,10 @@ class User extends Authenticatable implements FilamentUser
         }
 
         return false;
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
     }
 }
