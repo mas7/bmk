@@ -10,6 +10,10 @@ use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -34,8 +38,9 @@ class TicketResource extends Resource
                     ->label('Expected visit date')
                     ->required()
                     ->columnSpanFull(),
-                FileUpload::make('Images')
-                    //->required()
+                FileUpload::make('images')
+                    ->disk('public')
+                    ->directory(fn(Ticket $record) => "images/{$record->id}")
                     ->columnSpanFull()
                     ->multiple()
                     ->image()
@@ -45,7 +50,7 @@ class TicketResource extends Resource
                     ->previewable(true),
                 SignaturePad::make('signature')
                     ->label('Client Signature')
-                    //->required()
+                    ->confirmable()
                     ->columnSpanFull()
                     ->velocityFilterWeight(0.7)
                     ->backgroundColor('#fff')
@@ -130,5 +135,38 @@ class TicketResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('contractor_id', auth()->id())->count();
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('client.name'),
+                TextEntry::make('property.name'),
+                TextEntry::make('serviceCategory.name'),
+                TextEntry::make('status')
+                    ->badge()
+                    ->color(fn(TicketStatus $state): string => match ($state) {
+                        TicketStatus::OPEN => 'info',
+                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::POSTPONED => 'danger',
+                        default => 'warning'
+                    }),
+                TextEntry::make('expected_visit_at')
+                    ->label('Visit Date')
+                    ->placeholder('~'),
+                TextEntry::make('resolution_at')
+                    ->label('Resolution Date')
+                    ->placeholder('~'),
+                TextEntry::make('description')->columnSpanFull(),
+                ImageEntry::make('images.path')
+                    ->disk('public')
+                    ->size(200)
+                    ->grow(true),
+                ImageEntry::make('signature.path')
+                    ->disk('public')
+                    ->columnSpanFull()
+                    ->width('40rem'),
+            ]);
     }
 }
