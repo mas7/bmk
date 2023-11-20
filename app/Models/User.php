@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-/** @property Collection properties */
+/** @property String $name */
 class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -128,6 +128,11 @@ class User extends Authenticatable implements FilamentUser
 
     public function scopeDoesntHaveProperty(Builder $query): Builder
     {
-        return $query->whereDoesntHave('properties');
+        return $query->doesntHave('properties');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'client_id', 'id');
     }
 }
