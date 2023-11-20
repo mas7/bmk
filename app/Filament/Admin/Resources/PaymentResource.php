@@ -2,10 +2,11 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\PaymentStatus;
 use App\Enums\RentalPlanStatus;
-use App\Enums\TicketStatus;
-use App\Filament\Admin\Resources\RentalPlanResource\Pages;
-use App\Filament\Admin\Resources\RentalPlanResource\RelationManagers;
+use App\Filament\Admin\Resources\PaymentResource\Pages;
+use App\Filament\Admin\Resources\PaymentResource\RelationManagers;
+use App\Models\Payment;
 use App\Models\RentalPlan;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -18,26 +19,29 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class RentalPlanResource extends Resource
+class PaymentResource extends Resource
 {
-    protected static ?string $model = RentalPlan::class;
+    protected static ?string $model = Payment::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     protected static ?string $navigationGroup = 'Properties';
+
+    protected static ?int $navigationSort = 3;
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('property_id')
-                    ->label('Property')
-                    ->relationship(
-                        name: 'property',
-                        titleAttribute: 'name',
-                    )
+                Select::make('rental_plan_id')
+                    ->label('Rental Plan')
+                    ->required()
+                    ->relationship('rentalPlan', 'id')
+                    ->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name} - {$record->client->name}")
                     ->preload()
                     ->searchable(),
                 Select::make('client_id')
@@ -46,26 +50,23 @@ class RentalPlanResource extends Resource
                     ->relationship(
                         name: 'client',
                         titleAttribute: 'name',
+                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id', RentalPlan::find($get('rental_plan_id'))?->client_id)
                     )
                     ->preload()
                     ->searchable(),
-                DateTimePicker::make('start_date')
-                    ->label('Start Date')
-                    ->required()
-                    ->native(false),
-                DateTimePicker::make('end_date')
-                    ->label('End Date')
-                    ->required()
-                    ->native(false),
-                TextInput::make('monthly_rent')
+                TextInput::make('amount')
                     ->required()
                     ->numeric()
                     ->minValue(1)
                     ->prefix('QR'),
+                DateTimePicker::make('payment_date')
+                    ->label('Payment Date')
+                    ->required()
+                    ->native(false),
                 Select::make('status')
                     ->required()
-                    ->default(RentalPlanStatus::ACTIVE)
-                    ->options(RentalPlanStatus::class),
+                    ->default(PaymentStatus::PAID)
+                    ->options(PaymentStatus::class),
             ]);
     }
 
@@ -75,26 +76,25 @@ class RentalPlanResource extends Resource
             ->columns([
                 TextColumn::make('id')
                     ->label('Number')
-                    ->searchable(),
-                TextColumn::make("property.name")
-                    ->label("Property")
+                    ->searchable()
+                    ->formatStateUsing(fn($state): string => "#$state"),
+                TextColumn::make('rentalPlan.property.name')
+                    ->label('Property')
                     ->searchable(),
                 TextColumn::make("client.name")
-                    ->label("Client")
-                    ->searchable(),
-                TextColumn::make('monthly_rent')
+                    ->searchable()
+                    ->label("Client"),
+                TextColumn::make('amount')
                     ->prefix('QAR ')
                     ->numeric(decimalPlaces: 0)
                     ->sortable(),
-                TextColumn::make("start_date")
-                    ->searchable(),
-                TextColumn::make("end_date")
+                TextColumn::make("payment_date")
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn(RentalPlanStatus $state): string => match ($state) {
-                        RentalPlanStatus::ACTIVE => 'success',
-                        RentalPlanStatus::INACTIVE => 'danger',
+                    ->color(fn(PaymentStatus $state): string => match ($state) {
+                        PaymentStatus::PAID => 'success',
+                        PaymentStatus::UNPAID => 'danger',
                         default => 'warning'
                     }),
             ])
@@ -108,7 +108,8 @@ class RentalPlanResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('id', 'desc');
     }
 
     public static function getRelations(): array
@@ -121,9 +122,9 @@ class RentalPlanResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRentalPlans::route('/'),
-            'create' => Pages\CreateRentalPlan::route('/create'),
-            'edit' => Pages\EditRentalPlan::route('/{record}/edit'),
+            'index' => Pages\ListPayments::route('/'),
+            'create' => Pages\CreatePayment::route('/create'),
+            'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
     }
 
