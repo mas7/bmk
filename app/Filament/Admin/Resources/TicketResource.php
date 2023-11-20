@@ -11,6 +11,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -122,6 +125,7 @@ class TicketResource extends Resource
                     ->relationship('serviceCategory', 'name')
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -129,7 +133,8 @@ class TicketResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('id', 'desc');
+            ->defaultSort('id', 'desc')
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -151,5 +156,38 @@ class TicketResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('client.name'),
+                TextEntry::make('property.name'),
+                TextEntry::make('serviceCategory.name'),
+                TextEntry::make('status')
+                    ->badge()
+                    ->color(fn(TicketStatus $state): string => match ($state) {
+                        TicketStatus::OPEN => 'info',
+                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::POSTPONED => 'danger',
+                        default => 'warning'
+                    }),
+                TextEntry::make('expected_visit_at')
+                    ->label('Visit Date')
+                    ->placeholder('~'),
+                TextEntry::make('resolution_at')
+                    ->label('Resolution Date')
+                    ->placeholder('~'),
+                TextEntry::make('description')->columnSpanFull(),
+                ImageEntry::make('images.path')
+                    ->disk('public')
+                    ->size(200)
+                    ->grow(true),
+                ImageEntry::make('signature.path')
+                    ->disk('public')
+                    ->columnSpanFull()
+                    ->width('40rem'),
+            ]);
     }
 }

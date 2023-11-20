@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\TicketImageType;
 use App\Enums\TicketStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /** @property TicketStatus $status */
 class Ticket extends Model
@@ -47,5 +49,17 @@ class Ticket extends Model
     public function contractor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'contractor_id', 'id');
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(TicketImage::class)
+            ->where('type', TicketImageType::IMAGE);
+    }
+
+    public function signature(): HasMany
+    {
+        return $this->hasMany(TicketImage::class)
+            ->where('type', TicketImageType::SIGNATURE);
     }
 }

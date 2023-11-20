@@ -4,13 +4,10 @@ namespace App\Enums;
 
 use Filament\Support\Contracts\HasLabel;
 
-enum TicketStatus: int implements HasLabel
+enum TicketImageType: int implements HasLabel
 {
-    case OPEN = 1;
-    case ANSWERED = 2;
-    case RESOLVED = 3;
-    case POSTPONED = 4;
-    case REVIEW = 5;
+    case IMAGE = 1;
+    case SIGNATURE = 2;
 
     public function getLabel(): ?string
     {
