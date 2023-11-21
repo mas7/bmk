@@ -6,6 +6,8 @@ use App\Enums\TicketStatus;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource\RelationManagers;
 use App\Models\Ticket;
+use Carbon\Carbon;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -20,12 +22,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class TicketResource extends Resource
 {
     protected static ?string $model = Ticket::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -88,6 +93,7 @@ class TicketResource extends Resource
                 TextColumn::make('id')
                     ->label('Number')
                     ->searchable()
+                    ->sortable()
                     ->formatStateUsing(fn($state): string => "#$state"),
                 TextColumn::make("client.name")
                     ->searchable()
@@ -102,9 +108,13 @@ class TicketResource extends Resource
                     ->searchable()
                     ->placeholder('Not assigned'),
                 TextColumn::make("expected_visit_at")
+                    ->searchable()
+                    ->sortable()
                     ->label("Visit Date")
                     ->placeholder('~'),
                 TextColumn::make("resolution_at")
+                    ->searchable()
+                    ->sortable()
                     ->label("Resolution Date")
                     ->placeholder('~'),
                 TextColumn::make('status')
@@ -116,22 +126,33 @@ class TicketResource extends Resource
                         default => 'warning'
                     }),
                 TextColumn::make("created_at")
-                    ->label("Created"),
+                    ->searchable()
+                    ->sortable()
+                    ->label("Created")
+                    ->formatStateUsing(fn($state): string => Carbon::parse($state)->diffForHumans()),
             ])
             ->filters([
                 SelectFilter::make('status')
+                    ->multiple()
                     ->options(TicketStatus::class),
                 SelectFilter::make('service')
+                    ->multiple()
                     ->relationship('serviceCategory', 'name')
+                    ->preload()
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                        ->requiresConfirmation()
+                        ->disabled(fn(Ticket $ticket) => $ticket->status === TicketStatus::RESOLVED),
+                ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                //Tables\Actions\BulkActionGroup::make([
+                //    Tables\Actions\DeleteBulkAction::make(),
+                //]),
             ])
             ->defaultSort('id', 'desc')
             ->recordUrl(null);
@@ -183,11 +204,12 @@ class TicketResource extends Resource
                 ImageEntry::make('images.path')
                     ->disk('public')
                     ->size(200)
-                    ->grow(true),
+                    ->placeholder('~'),
                 ImageEntry::make('signature.path')
                     ->disk('public')
                     ->columnSpanFull()
-                    ->width('40rem'),
+                    ->width('40rem')
+                    ->placeholder('~'),
             ]);
     }
 }

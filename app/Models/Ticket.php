@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\TicketImageType;
 use App\Enums\TicketStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,5 +62,20 @@ class Ticket extends Model
     {
         return $this->hasMany(TicketImage::class)
             ->where('type', TicketImageType::SIGNATURE);
+    }
+
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query->where('status', TicketStatus::OPEN);
+    }
+
+    public function scopeReview(Builder $query): Builder
+    {
+        return $query->where('status', TicketStatus::REVIEW);
+    }
+
+    public function scopeResolved(Builder $query): Builder
+    {
+        return $query->where('status', TicketStatus::RESOLVED);
     }
 }

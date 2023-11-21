@@ -2,15 +2,22 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\TicketStatus;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
+use App\Models\Ticket;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
 use Rawilk\FilamentPasswordInput\Password;
@@ -22,6 +29,8 @@ class UserResource extends Resource
     protected static ?string $modelLabel = 'user';
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -72,22 +81,32 @@ class UserResource extends Resource
                     ->formatStateUsing(fn(string $state): string => ucwords(str_replace('_', ' ', $state)))
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
-                        'super_admin' => 'warning',
-                        'client' => 'danger',
+                        'super_admin' => 'primary',
+                        'client' => 'success',
+                        'contractor' => 'info',
                         default => 'gray'
                     })
             ])
             ->filters([
-                //
+                SelectFilter::make('roles.name')
+                    ->multiple()
+                    ->preload(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\DeleteAction::make()
+                        ->requiresConfirmation()
+                        ->disabled(fn(User $user) => $user->properties->isNotEmpty()),
+                ]),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                //Tables\Actions\BulkActionGroup::make([
+                //    Tables\Actions\DeleteBulkAction::make(),
+                //]),
+            ])
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -109,5 +128,27 @@ class UserResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('name'),
+                TextEntry::make('email'),
+                TextEntry::make('phone_number'),
+                TextEntry::make('roles.name')
+                    ->formatStateUsing(fn(string $state): string => ucwords(str_replace('_', ' ', $state)))
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'super_admin' => 'primary',
+                        'client' => 'success',
+                        'contractor' => 'info',
+                        default => 'gray'
+                    }),
+                TextEntry::make('created_at')
+                    ->label('Added Date')
+                    ->placeholder('~'),
+            ]);
     }
 }
