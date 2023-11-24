@@ -6,6 +6,7 @@ use App\Enums\TicketStatus;
 use App\Filament\Contractor\Resources\TicketResource\Pages;
 use App\Filament\Contractor\Resources\TicketResource\RelationManagers;
 use App\Models\Ticket;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
@@ -16,6 +17,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -37,7 +39,8 @@ class TicketResource extends Resource
                 DateTimePicker::make('expected_visit_at')
                     ->label('Expected visit date')
                     ->required()
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->native(false),
                 FileUpload::make('images')
                     ->disk('public')
                     ->directory(fn(Ticket $record) => "images/{$record->id}")
@@ -70,6 +73,7 @@ class TicketResource extends Resource
                 TextColumn::make('id')
                     ->label('Number')
                     ->searchable()
+                    ->sortable()
                     ->formatStateUsing(fn($state): string => "#$state"),
                 TextColumn::make("client.name")
                     ->searchable()
@@ -80,38 +84,49 @@ class TicketResource extends Resource
                 TextColumn::make("serviceCategory.name")
                     ->label("Service"),
                 TextColumn::make("expected_visit_at")
+                    ->searchable()
+                    ->sortable()
                     ->label("Visit Date")
                     ->placeholder('~'),
                 TextColumn::make("resolution_at")
+                    ->searchable()
+                    ->sortable()
                     ->label("Resolution Date")
                     ->placeholder('~'),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
-                        TicketStatus::OPEN => 'info',
-                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
                         TicketStatus::POSTPONED => 'danger',
-                        default => 'warning'
+                        default                 => 'warning'
                     }),
                 TextColumn::make("created_at")
-                    ->label("Created"),
+                    ->searchable()
+                    ->sortable()
+                    ->label("Created")
+                    ->formatStateUsing(fn($state): string => Carbon::parse($state)->diffForHumans()),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->options(TicketStatus::class),
                 SelectFilter::make('service')
                     ->relationship('serviceCategory', 'name')
+                    ->preload()
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\EditAction::make()
-                    ->visible(fn(Ticket $ticket) => $ticket->status !== TicketStatus::RESOLVED),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->disabled(fn(Ticket $ticket) => $ticket->status === TicketStatus::RESOLVED),
                 ]),
             ])
+            ->bulkActions([
+                //Tables\Actions\BulkActionGroup::make([
+                //    Tables\Actions\DeleteBulkAction::make(),
+                //]),
+            ])
+            ->poll('10s')
             ->defaultSort('id', 'desc')
             ->recordUrl(null);
     }
@@ -126,9 +141,9 @@ class TicketResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTickets::route('/'),
+            'index'  => Pages\ListTickets::route('/'),
             'create' => Pages\CreateTicket::route('/create'),
-            'edit' => Pages\EditTicket::route('/{record}/edit'),
+            'edit'   => Pages\EditTicket::route('/{record}/edit'),
         ];
     }
 
@@ -147,10 +162,10 @@ class TicketResource extends Resource
                 TextEntry::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
-                        TicketStatus::OPEN => 'info',
-                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
                         TicketStatus::POSTPONED => 'danger',
-                        default => 'warning'
+                        default                 => 'warning'
                     }),
                 TextEntry::make('expected_visit_at')
                     ->label('Visit Date')
@@ -162,11 +177,13 @@ class TicketResource extends Resource
                 ImageEntry::make('images.path')
                     ->disk('public')
                     ->size(200)
-                    ->grow(true),
+                    ->grow(true)
+                    ->placeholder('~'),
                 ImageEntry::make('signature.path')
                     ->disk('public')
                     ->columnSpanFull()
-                    ->width('40rem'),
+                    ->width('40rem')
+                    ->placeholder('~'),
             ]);
     }
 }

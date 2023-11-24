@@ -73,9 +73,9 @@ class User extends Authenticatable implements FilamentUser
         );
     }
 
-    public function scopeClients(Builder $query): Builder
+    public function scopeClients(Builder $query): void
     {
-        return $query->whereHas(
+        $query->whereHas(
             'roles',
             fn(Builder $query) => $query->where('name', 'client')
         );
@@ -123,12 +123,12 @@ class User extends Authenticatable implements FilamentUser
 
     public function getIsContractorActiveAttribute(): bool
     {
-        return $this->contractor->status === ContractorStatus::ACTIVE;
+        return $this->contractor?->status === ContractorStatus::ACTIVE;
     }
 
-    public function scopeDoesntHaveProperty(Builder $query): Builder
+    public function scopeDoesntHaveProperty(Builder $query): void
     {
-        return $query->doesntHave('properties');
+        $query->doesntHave('properties');
     }
 
     public function payments(): HasMany

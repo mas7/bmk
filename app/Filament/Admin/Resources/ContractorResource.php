@@ -89,7 +89,7 @@ class ContractorResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(ContractorStatus $state): string => match ($state) {
-                        ContractorStatus::ACTIVE => 'success',
+                        ContractorStatus::ACTIVE   => 'success',
                         ContractorStatus::INACTIVE => 'danger'
                     })
             ])
@@ -128,9 +128,9 @@ class ContractorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Admin\Resources\ContractorResource\Pages\ListContractors::route('/'),
+            'index'  => \App\Filament\Admin\Resources\ContractorResource\Pages\ListContractors::route('/'),
             'create' => \App\Filament\Admin\Resources\ContractorResource\Pages\CreateContractor::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\ContractorResource\Pages\EditContractor::route('/{record}/edit'),
+            'edit'   => \App\Filament\Admin\Resources\ContractorResource\Pages\EditContractor::route('/{record}/edit'),
         ];
     }
 
@@ -144,7 +144,6 @@ class ContractorResource extends Resource
         return $infolist
             ->schema([
                 TextEntry::make('user.name'),
-                TextEntry::make('user.name'),
                 TextEntry::make('user.phone_number'),
                 TextEntry::make('serviceCategory.name')
                     ->label('Service')
@@ -153,7 +152,7 @@ class ContractorResource extends Resource
                 TextEntry::make('status')
                     ->badge()
                     ->color(fn(ContractorStatus $state): string => match ($state) {
-                        ContractorStatus::ACTIVE => 'success',
+                        ContractorStatus::ACTIVE   => 'success',
                         ContractorStatus::INACTIVE => 'danger',
                     }),
                 TextEntry::make('created_at')

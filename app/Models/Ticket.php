@@ -78,4 +78,10 @@ class Ticket extends Model
     {
         return $query->where('status', TicketStatus::RESOLVED);
     }
+
+    public function scopeOwner(Builder $query): void
+    {
+        $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('user_id', auth()->id()))
+            ->when(auth()->user()->isContractor, fn(Builder $query) => $query->where('contractor_id', auth()->id()));
+    }
 }

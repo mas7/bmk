@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\PropertyResource\Pages;
+namespace App\Filament\Client\Resources\PropertyResource\Pages;
 
-use App\Filament\Admin\Resources\PropertyResource;
-use App\Models\Property;
+use App\Filament\Client\Resources\PropertyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
@@ -14,8 +13,7 @@ class EditProperty extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()
-                ->disabled(fn(Property $property) => $property->hasClient),
+            Actions\DeleteAction::make(),
         ];
     }
 }

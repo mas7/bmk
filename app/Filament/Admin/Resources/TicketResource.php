@@ -154,6 +154,7 @@ class TicketResource extends Resource
                 //    Tables\Actions\DeleteBulkAction::make(),
                 //]),
             ])
+            ->poll('10s')
             ->defaultSort('id', 'desc')
             ->recordUrl(null);
     }
@@ -212,4 +213,5 @@ class TicketResource extends Resource
                     ->placeholder('~'),
             ]);
     }
+
 }

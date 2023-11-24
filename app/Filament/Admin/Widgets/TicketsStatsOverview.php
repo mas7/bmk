@@ -11,9 +11,9 @@ class TicketsStatsOverview extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make('Tickets Open', Ticket::open()->count()),
-            Stat::make('Tickets in Review', Ticket::review()->count()),
-            Stat::make('Tickets Resolved', Ticket::resolved()->count()),
+            Stat::make('Tickets Open', Ticket::owner()->open()->count()),
+            Stat::make('Tickets in Review', Ticket::owner()->review()->count()),
+            Stat::make('Tickets Resolved', Ticket::owner()->resolved()->count()),
         ];
     }
 }

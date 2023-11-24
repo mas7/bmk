@@ -1,23 +1,14 @@
 <?php
 
-namespace App\Filament\Admin\Resources;
+namespace App\Filament\Client\Resources;
 
 use App\Enums\PaymentStatus;
-use App\Enums\RentalPlanStatus;
-use App\Enums\TicketStatus;
-use App\Filament\Admin\Resources\PaymentResource\Pages;
-use App\Filament\Admin\Resources\PaymentResource\RelationManagers;
+use App\Filament\Client\Resources\PaymentResource\Pages;
+use App\Filament\Client\Resources\PaymentResource\RelationManagers;
 use App\Models\Payment;
 use App\Models\Property;
-use App\Models\RentalPlan;
-use App\Models\Ticket;
 use Filament\Forms;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -27,7 +18,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PaymentResource extends Resource
@@ -40,42 +30,11 @@ class PaymentResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('rental_plan_id')
-                    ->label('Rental Plan')
-                    ->required()
-                    ->relationship('rentalPlan', 'id')
-                    ->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name}")
-                    //->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name} - {$record->client->name}")
-                    ->preload()
-                    ->searchable(),
-                Select::make('client_id')
-                    ->label('Client')
-                    ->required()
-                    ->relationship(
-                        name: 'client',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id', RentalPlan::find($get('rental_plan_id'))?->client_id)
-                    )
-                    ->preload()
-                    ->searchable(),
-                TextInput::make('amount')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->prefix('QR'),
-                DateTimePicker::make('payment_date')
-                    ->label('Payment Date')
-                    ->required()
-                    ->native(false),
-                Select::make('status')
-                    ->required()
-                    ->default(PaymentStatus::PAID)
-                    ->options(PaymentStatus::class),
+                //
             ]);
     }
 
@@ -115,16 +74,10 @@ class PaymentResource extends Resource
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()
-                        ->requiresConfirmation()
-                        ->disabled(fn(Payment $payment) => $payment->status === PaymentStatus::PAID),
                 ]),
             ])
             ->bulkActions([
-                //Tables\Actions\BulkActionGroup::make([
-                //    Tables\Actions\DeleteBulkAction::make(),
-                //]),
+
             ])
             ->defaultSort('id', 'desc')
             ->recordUrl(null);
@@ -148,7 +101,7 @@ class PaymentResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getModel()::where('client_id', auth()->id())->count();
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -157,7 +110,6 @@ class PaymentResource extends Resource
             ->schema([
                 TextEntry::make('id'),
                 TextEntry::make('rentalPlan.property.name'),
-                TextEntry::make('client.name'),
                 TextEntry::make('amount'),
                 TextEntry::make('payment_date'),
                 TextEntry::make('status')
