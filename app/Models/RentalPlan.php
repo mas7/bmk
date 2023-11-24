@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\RentalPlanStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,5 +44,10 @@ class RentalPlan extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function scopeOwner(Builder $query): void
+    {
+        $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('client_id', auth()->id()));
     }
 }

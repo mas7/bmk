@@ -1,21 +1,13 @@
 <?php
 
-namespace App\Filament\Admin\Resources;
+namespace App\Filament\Client\Resources;
 
 use App\Enums\RentalPlanStatus;
-use App\Enums\TicketStatus;
-use App\Filament\Admin\Resources\RentalPlanResource\Pages;
-use App\Filament\Admin\Resources\RentalPlanResource\RelationManagers;
-use App\Models\Property;
+use App\Filament\Client\Resources\RentalPlanResource\Pages;
+use App\Filament\Client\Resources\RentalPlanResource\RelationManagers;
 use App\Models\RentalPlan;
-use App\Models\Ticket;
 use Filament\Forms;
-use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -31,50 +23,19 @@ class RentalPlanResource extends Resource
 {
     protected static ?string $model = RentalPlan::class;
 
+
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
     protected static ?string $navigationGroup = 'Properties';
+
+    protected static ?int $navigationSort = 2;
+
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('property_id')
-                    ->label('Property')
-                    ->relationship(
-                        name: 'property',
-                        titleAttribute: 'name',
-                    //modifyQueryUsing: fn(Builder $query) => $query->doesntHaveClient()
-                    )
-                    ->preload()
-                    ->searchable(),
-                Select::make('client_id')
-                    ->label('Client')
-                    ->required()
-                    ->relationship(
-                        name: 'client',
-                        titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query) => $query->clients()
-                    )
-                    ->preload()
-                    ->searchable(),
-                DateTimePicker::make('start_date')
-                    ->label('Start Date')
-                    ->required()
-                    ->native(false),
-                DateTimePicker::make('end_date')
-                    ->label('End Date')
-                    ->required()
-                    ->native(false),
-                TextInput::make('monthly_rent')
-                    ->required()
-                    ->numeric()
-                    ->minValue(1)
-                    ->prefix('QR'),
-                Select::make('status')
-                    ->required()
-                    ->default(RentalPlanStatus::ACTIVE)
-                    ->options(RentalPlanStatus::class),
+                //
             ]);
     }
 
@@ -87,9 +48,6 @@ class RentalPlanResource extends Resource
                     ->sortable(),
                 TextColumn::make("property.name")
                     ->label("Property")
-                    ->searchable(),
-                TextColumn::make("client.name")
-                    ->label("Client")
                     ->searchable(),
                 TextColumn::make('monthly_rent')
                     ->prefix('QAR ')
@@ -114,16 +72,9 @@ class RentalPlanResource extends Resource
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
-                    Tables\Actions\DeleteAction::make()
-                        ->requiresConfirmation()
-                        ->disabled(fn(RentalPlan $rentalPlan) => $rentalPlan->status === RentalPlanStatus::ACTIVE),
                 ]),
             ])
             ->bulkActions([
-                //Tables\Actions\BulkActionGroup::make([
-                //    Tables\Actions\DeleteBulkAction::make(),
-                //]),
             ])
             ->recordUrl(null);
     }
@@ -146,7 +97,7 @@ class RentalPlanResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getModel()::where('client_id', auth()->id())->count();
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -155,7 +106,6 @@ class RentalPlanResource extends Resource
             ->schema([
                 TextEntry::make('id'),
                 TextEntry::make('property.name'),
-                TextEntry::make('client.name'),
                 TextEntry::make('monthly_rent'),
                 TextEntry::make('start_date'),
                 TextEntry::make('end_date'),

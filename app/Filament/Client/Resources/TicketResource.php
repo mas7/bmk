@@ -12,8 +12,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -59,10 +63,8 @@ class TicketResource extends Resource
                 TextColumn::make('id')
                     ->label('Number')
                     ->searchable()
+                    ->sortable()
                     ->formatStateUsing(fn($state): string => "#$state"),
-                TextColumn::make("client.name")
-                    ->searchable()
-                    ->label("Client"),
                 TextColumn::make("property.name")
                     ->searchable()
                     ->label("Property"),
@@ -81,10 +83,10 @@ class TicketResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
-                        TicketStatus::OPEN => 'info',
-                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
                         TicketStatus::POSTPONED => 'danger',
-                        default => 'warning'
+                        default                 => 'warning'
                     }),
                 TextColumn::make("created_at")
                     ->label("Created"),
@@ -96,14 +98,20 @@ class TicketResource extends Resource
                     ->relationship('serviceCategory', 'name')
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->disabled(fn(Ticket $ticket) => $ticket->status === TicketStatus::RESOLVED),
                 ]),
             ])
-            ->defaultSort('id', 'desc');
+            ->bulkActions([
+                //Tables\Actions\BulkActionGroup::make([
+                //    Tables\Actions\DeleteBulkAction::make(),
+                //]),
+            ])
+            ->poll('10s')
+            ->defaultSort('id', 'desc')
+            ->recordUrl(null);
     }
 
     public static function getRelations(): array
@@ -116,9 +124,9 @@ class TicketResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTickets::route('/'),
+            'index'  => Pages\ListTickets::route('/'),
             'create' => Pages\CreateTicket::route('/create'),
-            'edit' => Pages\EditTicket::route('/{record}/edit'),
+            'edit'   => Pages\EditTicket::route('/{record}/edit'),
         ];
     }
 
@@ -126,4 +134,38 @@ class TicketResource extends Resource
     {
         return static::getModel()::where('user_id', auth()->id())->count();
     }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('property.name'),
+                TextEntry::make('serviceCategory.name'),
+                TextEntry::make('status')
+                    ->badge()
+                    ->color(fn(TicketStatus $state): string => match ($state) {
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
+                        TicketStatus::POSTPONED => 'danger',
+                        default                 => 'warning'
+                    }),
+                TextEntry::make('expected_visit_at')
+                    ->label('Visit Date')
+                    ->placeholder('~'),
+                TextEntry::make('resolution_at')
+                    ->label('Resolution Date')
+                    ->placeholder('~'),
+                TextEntry::make('description')->columnSpanFull(),
+                ImageEntry::make('images.path')
+                    ->disk('public')
+                    ->size(200)
+                    ->placeholder('~'),
+                ImageEntry::make('signature.path')
+                    ->disk('public')
+                    ->columnSpanFull()
+                    ->width('40rem')
+                    ->placeholder('~'),
+            ]);
+    }
+
 }

@@ -29,13 +29,23 @@ class Property extends Model
         return $this->belongsTo(User::class, 'client_id', 'id');
     }
 
-    public function scopeDoesntHaveClient(Builder $query): Builder
+    public function scopeDoesntHaveClient(Builder $query): void
     {
-        return $query->whereNull('client_id');
+        $query->whereDoesntHave('client');
     }
 
     public function rentalPlan(): HasMany
     {
         return $this->hasMany(RentalPlan::class);
+    }
+
+    public function getHasClientAttribute(): bool
+    {
+        return isset($this->client_id);
+    }
+
+    public function scopeOwner(Builder $query): void
+    {
+        $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('client_id', auth()->id()));
     }
 }

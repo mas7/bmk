@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\PaymentStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,5 +33,10 @@ class Payment extends Model
     public function rentalPlan(): BelongsTo
     {
         return $this->belongsTo(RentalPlan::class);
+    }
+
+    public function scopeOwner(Builder $query): void
+    {
+        $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('client_id', auth()->id()));
     }
 }

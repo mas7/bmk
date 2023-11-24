@@ -26,19 +26,30 @@ class EditTicket extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $this->createImagesModel(
-            $data['images'],
-            TicketImageType::IMAGE
-        );
+        if (isset($data['images']) && count($data['images']) > 0) {
+            $record->images()->delete();
 
-        $this->createSingleImageModel(
-            $this->signatureToImage($data['signature']),
-            TicketImageType::SIGNATURE
-        );
+            $this->createImagesModel(
+                $data['images'],
+                TicketImageType::IMAGE
+            );
+
+        }
+
+        if (isset($data['signature'])) {
+            $record->signature()->delete();
+
+            $this->createSingleImageModel(
+                $this->signatureToImage($data['signature']),
+                TicketImageType::SIGNATURE
+            );
+        }
+
 
         $record->update([
-            'status' => TicketStatus::REVIEW,
-            'resolution_at' => now(),
+            'status'            => TicketStatus::REVIEW,
+            'expected_visit_at' => data_get($data, 'expected_visit_at') ?? $record->expected_visit_at,
+            'resolution_at'     => now(),
         ]);
 
         return $record;
@@ -58,8 +69,8 @@ class EditTicket extends EditRecord
 
         TicketImage::create([
             'ticket_id' => $ticket->id,
-            'path' => $imagePath,
-            'type' => $type
+            'path'      => $imagePath,
+            'type'      => $type
         ]);
     }
 
@@ -72,7 +83,7 @@ class EditTicket extends EditRecord
         $ticket = $this->getRecord();
 
         $folderPath = 'signatures';
-        $filePath = "$folderPath/{$ticket->id}/signature.png";
+        $filePath   = "$folderPath/{$ticket->id}/signature.png";
 
         if (!Storage::disk('public')->exists($folderPath)) {
             Storage::disk('public')->makeDirectory($folderPath);
