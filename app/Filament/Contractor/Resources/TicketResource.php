@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Infolists;
 use Filament\Infolists\Components\ImageEntry;
@@ -41,6 +42,10 @@ class TicketResource extends Resource
                     ->required()
                     ->columnSpanFull()
                     ->native(false),
+                Textarea::make('contractor_description')
+                    ->rows(4)
+                    ->placeholder('Write a small brief about the issue...')
+                    ->columnSpanFull(),
                 FileUpload::make('images')
                     ->disk('public')
                     ->directory(fn(Ticket $record) => "images/{$record->id}")
@@ -86,7 +91,7 @@ class TicketResource extends Resource
                 TextColumn::make("expected_visit_at")
                     ->searchable()
                     ->sortable()
-                    ->label("Visit Date")
+                    ->label("Expected Visit Date")
                     ->placeholder('~'),
                 TextColumn::make("resolution_at")
                     ->searchable()
@@ -168,12 +173,17 @@ class TicketResource extends Resource
                         default                 => 'warning'
                     }),
                 TextEntry::make('expected_visit_at')
-                    ->label('Visit Date')
+                    ->label('Expected Visit Date')
                     ->placeholder('~'),
                 TextEntry::make('resolution_at')
                     ->label('Resolution Date')
                     ->placeholder('~'),
-                TextEntry::make('description')->columnSpanFull(),
+                TextEntry::make('description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
+                TextEntry::make('contractor_description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
                 ImageEntry::make('images.path')
                     ->disk('public')
                     ->size(200)

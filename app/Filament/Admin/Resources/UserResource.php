@@ -19,6 +19,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 use Rawilk\FilamentPasswordInput\Password;
 
@@ -43,6 +44,7 @@ class UserResource extends Resource
                 TextInput::make('email')
                     ->required()
                     ->email()
+                    ->unique()
                     ->maxLength(255),
                 TextInput::make('phone_number')
                     ->required()
@@ -58,7 +60,11 @@ class UserResource extends Resource
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $context): bool => $context === 'create'),
                 Select::make('role')
-                    ->relationship('roles', 'name')
+                    ->relationship(
+                        'roles',
+                        'name',
+                        fn(Builder $query) => $query->where('name', '!=', 'contractor')
+                    )
                     ->preload()
                     ->searchable()
                     ->default(2)
@@ -76,19 +82,21 @@ class UserResource extends Resource
                     ->searchable()
                     ->copyable(),
                 TextColumn::make('phone_number')
-                    ->searchable(),
+                    ->searchable()
+                    ->copyable(),
                 TextColumn::make('roles.name')
                     ->formatStateUsing(fn(string $state): string => ucwords(str_replace('_', ' ', $state)))
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'super_admin' => 'primary',
-                        'client' => 'success',
-                        'contractor' => 'info',
-                        default => 'gray'
+                        'client'      => 'success',
+                        'contractor'  => 'info',
+                        default       => 'gray'
                     })
             ])
             ->filters([
-                SelectFilter::make('roles.name')
+                SelectFilter::make('role')
+                    ->relationship('roles', 'name', fn(Builder $query) => $query->whereNot('name', '=', 'contractor'))
                     ->multiple()
                     ->preload(),
             ])
@@ -119,9 +127,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Admin\Resources\UserResource\Pages\ListUsers::route('/'),
+            'index'  => \App\Filament\Admin\Resources\UserResource\Pages\ListUsers::route('/'),
             'create' => \App\Filament\Admin\Resources\UserResource\Pages\CreateUser::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\UserResource\Pages\EditUser::route('/{record}/edit'),
+            'edit'   => \App\Filament\Admin\Resources\UserResource\Pages\EditUser::route('/{record}/edit'),
         ];
     }
 
@@ -142,9 +150,9 @@ class UserResource extends Resource
                     ->badge()
                     ->color(fn(string $state): string => match ($state) {
                         'super_admin' => 'primary',
-                        'client' => 'success',
-                        'contractor' => 'info',
-                        default => 'gray'
+                        'client'      => 'success',
+                        'contractor'  => 'info',
+                        default       => 'gray'
                     }),
                 TextEntry::make('created_at')
                     ->label('Added Date')

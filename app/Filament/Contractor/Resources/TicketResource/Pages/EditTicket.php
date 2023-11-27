@@ -47,9 +47,10 @@ class EditTicket extends EditRecord
 
 
         $record->update([
-            'status'            => TicketStatus::REVIEW,
-            'expected_visit_at' => data_get($data, 'expected_visit_at') ?? $record->expected_visit_at,
-            'resolution_at'     => now(),
+            'status'                 => TicketStatus::REVIEW,
+            'expected_visit_at'      => data_get($data, 'expected_visit_at') ?? $record->expected_visit_at,
+            'resolution_at'          => now(),
+            'contractor_description' => data_get($data, 'contractor_description') ?? $record->contractor_description,
         ]);
 
         return $record;

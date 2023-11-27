@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+Route::redirect('/', '/client');
+
 // Route::get('/email', function () {
 //     $data = (object)[
 //         'name' => 'Ahmed',

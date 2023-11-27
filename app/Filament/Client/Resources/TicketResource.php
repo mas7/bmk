@@ -75,7 +75,7 @@ class TicketResource extends Resource
                     ->searchable()
                     ->placeholder('Not assigned'),
                 TextColumn::make("expected_visit_at")
-                    ->label("Visit Date")
+                    ->label("Expected Visit Date")
                     ->placeholder('~'),
                 TextColumn::make("resolution_at")
                     ->label("Resolution Date")
@@ -150,12 +150,17 @@ class TicketResource extends Resource
                         default                 => 'warning'
                     }),
                 TextEntry::make('expected_visit_at')
-                    ->label('Visit Date')
+                    ->label('Expected Visit Date')
                     ->placeholder('~'),
                 TextEntry::make('resolution_at')
                     ->label('Resolution Date')
                     ->placeholder('~'),
-                TextEntry::make('description')->columnSpanFull(),
+                TextEntry::make('description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
+                TextEntry::make('contractor_description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
                 ImageEntry::make('images.path')
                     ->disk('public')
                     ->size(200)

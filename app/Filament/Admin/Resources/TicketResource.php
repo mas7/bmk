@@ -45,7 +45,8 @@ class TicketResource extends Resource
                         modifyQueryUsing: fn(Builder $query) => $query->clients()->hasProperty()
                     )
                     ->preload()
-                    ->searchable(),
+                    ->searchable(['name', 'phone_number', 'email'])
+                    ->native(false),
                 Select::make('property_id')
                     ->label('Property')
                     ->relationship(
@@ -54,7 +55,8 @@ class TicketResource extends Resource
                         modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('client_id', $get('user_id'))
                     )
                     ->preload()
-                    ->searchable(),
+                    ->searchable()
+                    ->native(false),
                 Select::make('service_category_id')
                     ->label('Service category')
                     ->required()
@@ -70,11 +72,13 @@ class TicketResource extends Resource
                         modifyQueryUsing: fn(Builder $query, Get $get) => $query->contractors(serviceCategoryId: $get('service_category_id'))
                     )
                     ->preload()
-                    ->searchable(),
+                    ->searchable()
+                    ->native(false),
                 Select::make('status')
                     ->required()
                     ->default(TicketStatus::OPEN)
-                    ->options(TicketStatus::class),
+                    ->options(TicketStatus::class)
+                    ->native(false),
                 DateTimePicker::make('expected_visit_at')
                     ->label('Expected visit date')
                     ->required()
@@ -110,7 +114,7 @@ class TicketResource extends Resource
                 TextColumn::make("expected_visit_at")
                     ->searchable()
                     ->sortable()
-                    ->label("Visit Date")
+                    ->label("Expected Visit Date")
                     ->placeholder('~'),
                 TextColumn::make("resolution_at")
                     ->searchable()
@@ -120,10 +124,10 @@ class TicketResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
-                        TicketStatus::OPEN => 'info',
-                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
                         TicketStatus::POSTPONED => 'danger',
-                        default => 'warning'
+                        default                 => 'warning'
                     }),
                 TextColumn::make("created_at")
                     ->searchable()
@@ -169,9 +173,9 @@ class TicketResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => \App\Filament\Admin\Resources\TicketResource\Pages\ListTickets::route('/'),
+            'index'  => \App\Filament\Admin\Resources\TicketResource\Pages\ListTickets::route('/'),
             'create' => \App\Filament\Admin\Resources\TicketResource\Pages\CreateTicket::route('/create'),
-            'edit' => \App\Filament\Admin\Resources\TicketResource\Pages\EditTicket::route('/{record}/edit'),
+            'edit'   => \App\Filament\Admin\Resources\TicketResource\Pages\EditTicket::route('/{record}/edit'),
         ];
     }
 
@@ -190,18 +194,23 @@ class TicketResource extends Resource
                 TextEntry::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
-                        TicketStatus::OPEN => 'info',
-                        TicketStatus::RESOLVED => 'success',
+                        TicketStatus::OPEN      => 'info',
+                        TicketStatus::RESOLVED  => 'success',
                         TicketStatus::POSTPONED => 'danger',
-                        default => 'warning'
+                        default                 => 'warning'
                     }),
                 TextEntry::make('expected_visit_at')
-                    ->label('Visit Date')
+                    ->label('Expected Visit Date')
                     ->placeholder('~'),
                 TextEntry::make('resolution_at')
                     ->label('Resolution Date')
                     ->placeholder('~'),
-                TextEntry::make('description')->columnSpanFull(),
+                TextEntry::make('description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
+                TextEntry::make('contractor_description')
+                    ->placeholder('~')
+                    ->columnSpanFull(),
                 ImageEntry::make('images.path')
                     ->disk('public')
                     ->size(200)

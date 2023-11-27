@@ -39,6 +39,7 @@ CREATE TABLE `tickets`
     `property_id`         bigint unsigned NOT NULL,
     `contractor_id`       bigint unsigned DEFAULT NULL,
     `description`         text COLLATE utf8mb4_unicode_ci,
+    `contractor_description` text COLLATE utf8mb4_unicode_ci,
     `status`              tinyint NOT NULL,
     `expected_visit_at`   datetime DEFAULT NULL,
     `resolution_at`       datetime DEFAULT NULL,
@@ -59,14 +60,16 @@ INSERT INTO `ticket_images` (`id`, `ticket_id`, `path`, `type`, `created_at`, `u
 VALUES ('7', '1', 'images/1/01HG196D9AE2AER7WEA8HMDG7H.png', '1', '2023-11-24 18:24:11', '2023-11-24 18:24:11'),
        ('8', '1', 'signatures/1/signature.png', '2', '2023-11-24 18:24:11', '2023-11-24 18:24:11');
 
-INSERT INTO `tickets` (`id`, `user_id`, `service_category_id`, `property_id`, `contractor_id`, `description`, `status`,
+INSERT INTO `tickets` (`id`, `user_id`, `service_category_id`, `property_id`, `contractor_id`, `description`,
+                       `contractor_description`, `status`,
                        `expected_visit_at`, `resolution_at`, `created_at`, `updated_at`)
 VALUES ('1', '2', '4', '1', '5',
         'The AC unit started making a loud humming noise last night and has stopped cooling effectively. The temperature in the house is significantly higher than the thermostat setting.',
+        NULL,
         '5', '2023-11-26 00:00:00', '2023-11-24 18:24:59', '2023-11-22 22:23:15', '2023-11-24 18:24:59'),
        ('2', '2', '1', '1', NULL,
         'Kitchen: Clean appliances (fridge, oven, microwave), scrub sink, countertops, and cabinets.\nLiving Room: Dust and wipe all surfaces, vacuum and shampoo carpet, clean windows.\nBathrooms: Disinfect and scrub toilets, sinks, bathtubs, and showers; clean mirrors; mop floors.',
-        '1', NULL, NULL, '2023-11-22 22:24:37', '2023-11-22 22:24:37');
+        NULL, '1', NULL, NULL, '2023-11-22 22:24:37', '2023-11-22 22:24:37');
 
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Admin\Widgets\PropertyStatsOverview;
 use App\Filament\Admin\Widgets\TicketsStatsOverview;
 use App\Filament\Admin\Widgets\UsersStatsOverview;
+use App\Http\Middleware\RedirectUser;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -30,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->darkMode(false)
             ->login()
             ->colors([
                 'primary' => Color::Cyan,
@@ -49,6 +51,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->middleware([
                 EncryptCookies::class,
+                RedirectUser::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,

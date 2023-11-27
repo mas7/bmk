@@ -21,15 +21,16 @@ class Ticket extends Model
         'property_id',
         'contractor_id',
         'description',
+        'contractor_description',
         'status',
         'expected_visit_at',
         'resolution_at'
     ];
 
     protected $casts = [
-        'status' => TicketStatus::class,
+        'status'            => TicketStatus::class,
         'expected_visit_at' => 'datetime',
-        'resolution_at' => 'datetime'
+        'resolution_at'     => 'datetime'
     ];
 
     public function client(): BelongsTo

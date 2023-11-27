@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Admin\Widgets\TicketsStatsOverview;
+use App\Http\Middleware\RedirectUser;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -28,6 +29,7 @@ class ContractorPanelProvider extends PanelProvider
         return $panel
             ->id('contractor')
             ->path('contractor')
+            ->darkMode(false)
             ->login()
             ->colors([
                 'primary' => Color::Indigo,
@@ -45,6 +47,7 @@ class ContractorPanelProvider extends PanelProvider
             ])
             ->middleware([
                 EncryptCookies::class,
+                RedirectUser::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,
