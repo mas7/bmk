@@ -86,8 +86,10 @@ class TicketResource extends Resource
                 TextColumn::make("property.name")
                     ->searchable()
                     ->label("Property"),
-                TextColumn::make("serviceCategory.name")
-                    ->label("Service"),
+                TextColumn::make('ticketServices.service.name')
+                    ->label('Services')
+                    ->badge()
+                    ->color(fn(string $state): string => 'primary'),
                 TextColumn::make("expected_visit_at")
                     ->searchable()
                     ->sortable()
@@ -116,7 +118,9 @@ class TicketResource extends Resource
                 SelectFilter::make('status')
                     ->options(TicketStatus::class),
                 SelectFilter::make('service')
-                    ->relationship('serviceCategory', 'name')
+                    ->relationship('ticketServices.service', 'name')
+                    ->native(false)
+                    ->multiple()
                     ->preload()
             ])
             ->actions([
@@ -163,7 +167,6 @@ class TicketResource extends Resource
             ->schema([
                 TextEntry::make('client.name'),
                 TextEntry::make('property.name'),
-                TextEntry::make('serviceCategory.name'),
                 TextEntry::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
@@ -172,6 +175,10 @@ class TicketResource extends Resource
                         TicketStatus::POSTPONED => 'danger',
                         default                 => 'warning'
                     }),
+                TextEntry::make('ticketServices.service.name')
+                    ->label('Services')
+                    ->badge()
+                    ->color(fn(string $state): string => 'primary'),
                 TextEntry::make('expected_visit_at')
                     ->label('Expected Visit Date')
                     ->placeholder('~'),

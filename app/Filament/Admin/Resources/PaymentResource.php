@@ -29,6 +29,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class PaymentResource extends Resource
 {
@@ -122,9 +126,19 @@ class PaymentResource extends Resource
                 ]),
             ])
             ->bulkActions([
-                //Tables\Actions\BulkActionGroup::make([
-                //    Tables\Actions\DeleteBulkAction::make(),
-                //]),
+                ExportBulkAction::make()->exports([
+                    ExcelExport::make('table')
+                        ->askForFilename()
+                        ->fromTable()
+                        ->withColumns([
+                            Column::make('status')
+                                ->formatStateUsing(fn(PaymentStatus $state): string => match ($state) {
+                                    PaymentStatus::PAID   => PaymentStatus::PAID->name,
+                                    PaymentStatus::UNPAID => PaymentStatus::UNPAID->name,
+                                    default               => '~'
+                                }),
+                        ]),
+                ])
             ])
             ->defaultSort('id', 'desc')
             ->recordUrl(null);

@@ -144,11 +144,10 @@ class ContractorResource extends Resource
                     })
             ])
             ->filters([
-                // TODO: TO BE FIXED
-                //SelectFilter::make('service')
-                //    ->multiple()
-                //    ->relationship('serviceCategories', 'name')
-                //    ->preload(),
+                SelectFilter::make('services')
+                    ->multiple()
+                    ->relationship('contractorServices.service.category', 'name')
+                    ->preload(),
                 SelectFilter::make('status')
                     ->multiple()
                     ->options(ContractorStatus::class),

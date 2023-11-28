@@ -5,6 +5,8 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\TicketStatus;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource\RelationManagers;
+use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\Ticket;
 use Carbon\Carbon;
 use Filament\Tables\Actions\ActionGroup;
@@ -22,7 +24,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
 class TicketResource extends Resource
 {
@@ -57,12 +58,23 @@ class TicketResource extends Resource
                     ->preload()
                     ->searchable()
                     ->native(false),
-                Select::make('service_category_id')
-                    ->label('Service category')
+                Select::make('service_ids')
+                    ->label('Services (Multiple)')
                     ->required()
-                    ->relationship('serviceCategory', 'name')
-                    ->preload()
-                    ->searchable(),
+                    ->multiple()
+                    ->searchable()
+                    ->getOptionLabelUsing(fn($value): ?string => Service::find($value)?->name)
+                    ->native(false)
+                    ->minItems(1)
+                    ->options(
+                        function () {
+                            return ServiceCategory::query()
+                                ->with(['services'])
+                                ->get()
+                                ->mapWithKeys(fn($category) => [$category->name => $category->services->pluck('name', 'id')])
+                                ->toArray();
+                        }
+                    ),
                 Select::make('contractor_id')
                     ->label('Contractor')
                     ->required()
@@ -82,11 +94,13 @@ class TicketResource extends Resource
                 DateTimePicker::make('expected_visit_at')
                     ->label('Expected visit date')
                     ->required()
+                    ->timezone('Asia/Qatar')
                     ->native(false),
                 Textarea::make('description')
                     ->rows(4)
                     ->placeholder('Write a small brief about the issue...')
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
+
             ]);
     }
 
@@ -105,8 +119,10 @@ class TicketResource extends Resource
                 TextColumn::make("property.name")
                     ->searchable()
                     ->label("Property"),
-                TextColumn::make("serviceCategory.name")
-                    ->label("Service"),
+                TextColumn::make('ticketServices.service.name')
+                    ->label('Services')
+                    ->badge()
+                    ->color(fn(string $state): string => 'primary'),
                 TextColumn::make("contractor.name")
                     ->label("Contractor")
                     ->searchable()
@@ -140,8 +156,9 @@ class TicketResource extends Resource
                     ->multiple()
                     ->options(TicketStatus::class),
                 SelectFilter::make('service')
+                    ->relationship('ticketServices.service', 'name')
+                    ->native(false)
                     ->multiple()
-                    ->relationship('serviceCategory', 'name')
                     ->preload()
             ])
             ->actions([
@@ -154,11 +171,8 @@ class TicketResource extends Resource
                 ]),
             ])
             ->bulkActions([
-                //Tables\Actions\BulkActionGroup::make([
-                //    Tables\Actions\DeleteBulkAction::make(),
-                //]),
             ])
-            ->poll('10s')
+            ->poll()
             ->defaultSort('id', 'desc')
             ->recordUrl(null);
     }
@@ -190,7 +204,6 @@ class TicketResource extends Resource
             ->schema([
                 TextEntry::make('client.name'),
                 TextEntry::make('property.name'),
-                TextEntry::make('serviceCategory.name'),
                 TextEntry::make('status')
                     ->badge()
                     ->color(fn(TicketStatus $state): string => match ($state) {
@@ -199,6 +212,10 @@ class TicketResource extends Resource
                         TicketStatus::POSTPONED => 'danger',
                         default                 => 'warning'
                     }),
+                TextEntry::make('ticketServices.service.name')
+                    ->label('Services')
+                    ->badge()
+                    ->color(fn(string $state): string => 'primary'),
                 TextEntry::make('expected_visit_at')
                     ->label('Expected Visit Date')
                     ->placeholder('~'),
