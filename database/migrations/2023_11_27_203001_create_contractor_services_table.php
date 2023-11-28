@@ -7,16 +7,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('contractors', function (Blueprint $table) {
+        Schema::create('contractor_services', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained();
-            $table->tinyInteger('status')->unsigned();
+            $table->foreignId('contractor_id');
+            $table->foreignId('service_id');
+            $table->foreignId('service_category_id');
+            $table->integer('price')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('contractors');
+        Schema::dropIfExists('contractor_services');
     }
 };

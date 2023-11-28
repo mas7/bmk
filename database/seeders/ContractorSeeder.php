@@ -21,7 +21,6 @@ class ContractorSeeder extends Seeder
             'Emerald Cleaning Services Qatar',
             'info@emeraldqatar.com',
             '30001817',
-            'cleaning',
             ContractorStatus::ACTIVE
         );
 
@@ -29,7 +28,6 @@ class ContractorSeeder extends Seeder
             'Abu Zaid Contracting',
             'info@abuzaidservices.com',
             '50283052',
-            'electrical',
             ContractorStatus::INACTIVE
         );
 
@@ -37,12 +35,11 @@ class ContractorSeeder extends Seeder
             'FIXIT',
             'helpdesk@fixitqatar.com',
             '31334948',
-            'AC Repair',
             ContractorStatus::ACTIVE
         );
     }
 
-    public function createContractor(string $name, string $email, string $phone, string $service, ContractorStatus $status): void
+    public function createContractor(string $name, string $email, string $phone, ContractorStatus $status): void
     {
         $contractorUser = User::factory()->create([
             'name'         => $name,
@@ -54,9 +51,8 @@ class ContractorSeeder extends Seeder
         $contractorUser->roles()->attach(Role::firstWhere('name', 'LIKE', '%contract%'));
 
         Contractor::create([
-            'user_id'             => $contractorUser->id,
-            'service_category_id' => ServiceCategory::firstWhere('name', 'LIKE', "%{$service}%")->id,
-            'status'              => $status
+            'user_id' => $contractorUser->id,
+            'status'  => $status
         ]);
     }
 }

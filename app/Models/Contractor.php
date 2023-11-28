@@ -6,6 +6,8 @@ use App\Enums\ContractorStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Contractor extends Model
 {
@@ -13,12 +15,11 @@ class Contractor extends Model
 
     protected $fillable = [
         'user_id',
-        'service_category_id',
         'status',
     ];
 
     protected $casts = [
-        'status'    => ContractorStatus::class
+        'status' => ContractorStatus::class
     ];
 
     public function user(): BelongsTo
@@ -26,8 +27,21 @@ class Contractor extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function serviceCategory(): BelongsTo
+    public function serviceCategories(): HasManyThrough
     {
-        return $this->belongsTo(ServiceCategory::class);
+        return $this->hasManyThrough(
+            ServiceCategory::class,
+            ContractorService::class,
+            'contractor_id',       // Foreign key on the ContractorService table
+            'id',                  // Foreign key on the ServiceCategory table
+            'id',                  // Local key on the Contractor table
+            'service_category_id'  // Local key on the ContractorService table
+        );
+    }
+
+
+    public function contractorServices(): HasMany
+    {
+        return $this->hasMany(ContractorService::class);
     }
 }
