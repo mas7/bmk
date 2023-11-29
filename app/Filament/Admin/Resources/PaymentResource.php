@@ -6,7 +6,6 @@ use App\Enums\PaymentStatus;
 use App\Enums\RentalPlanStatus;
 use App\Enums\TicketStatus;
 use App\Filament\Admin\Resources\PaymentResource\Pages;
-use App\Filament\Admin\Resources\PaymentResource\RelationManagers;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentalPlan;
@@ -49,22 +48,26 @@ class PaymentResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('rental_plan_id')
-                    ->label('Rental Plan')
-                    ->required()
-                    ->relationship('rentalPlan', 'id')
-                    ->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name}")
-                    //->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name} - {$record->client->name}")
-                    ->preload()
-                    ->searchable(),
                 Select::make('client_id')
                     ->label('Client')
                     ->required()
                     ->relationship(
                         name: 'client',
                         titleAttribute: 'name',
-                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id', RentalPlan::find($get('rental_plan_id'))?->client_id)
+                        modifyQueryUsing: fn(Builder $query) => $query->whereHas('rentalPlans', fn($q) => $q->active())
                     )
+                    ->preload()
+                    ->searchable(),
+                Select::make('rental_plan_id')
+                    ->label('Rental Plan')
+                    ->required()
+                    ->reactive()
+                    ->relationship(
+                        'rentalPlan',
+                        'id',
+                        fn(Builder $query, Get $get) => $query->where('client_id', $get('client_id'))
+                    )
+                    ->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name}")
                     ->preload()
                     ->searchable(),
                 TextInput::make('amount')
