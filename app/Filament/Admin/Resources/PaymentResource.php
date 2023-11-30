@@ -9,24 +9,32 @@ use App\Filament\Admin\Resources\PaymentResource\Pages;
 use App\Models\Payment;
 use App\Models\Property;
 use App\Models\RentalPlan;
+use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\Ticket;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Columns\Layout\Panel;
+use Filament\Tables\Columns\Layout\Stack;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -69,8 +77,13 @@ class PaymentResource extends Resource
                     )
                     ->getOptionLabelFromRecordUsing(fn(RentalPlan $record) => "{$record->property->name}")
                     ->preload()
-                    ->searchable(),
+                    ->searchable()
+                    ->afterStateUpdated(function (?string $state, ?string $old, Set $set) {
+                        $rentAmount = RentalPlan::find($state)?->monthly_rent ?? 0;
+                        $set('amount', $rentAmount);
+                    }),
                 TextInput::make('amount')
+                    ->label('Due Amount')
                     ->required()
                     ->numeric()
                     ->minValue(1)
@@ -78,11 +91,36 @@ class PaymentResource extends Resource
                 DateTimePicker::make('payment_date')
                     ->label('Payment Date')
                     ->required()
-                    ->native(false),
+                    ->native(false)
+                    ->default(today()),
                 Select::make('status')
                     ->required()
                     ->default(PaymentStatus::PAID)
                     ->options(PaymentStatus::class),
+                Repeater::make('partials')
+                    ->label('Partials')
+                    ->reorderable(false)
+                    ->schema([
+                        Grid::make([
+                            'sm'  => 1,
+                            'md'  => 1,
+                            'lg'  => 2,
+                            'xl'  => 2,
+                            '2xl' => 2,
+                        ])
+                            ->schema([
+                                TextInput::make('amount')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->prefix('QR'),
+                                DateTimePicker::make('payment_date')
+                                    ->label('Payment Date')
+                                    ->required()
+                                    ->native(false),
+                            ])
+                    ])
+                    ->columnSpanFull()
             ]);
     }
 
@@ -101,6 +139,12 @@ class PaymentResource extends Resource
                     ->searchable()
                     ->label("Client"),
                 TextColumn::make('amount')
+                    ->label('Due Amount')
+                    ->prefix('QAR ')
+                    ->numeric(decimalPlaces: 0)
+                    ->sortable(),
+                TextColumn::make('paid_amount')
+                    ->label('Paid Amount')
                     ->prefix('QAR ')
                     ->numeric(decimalPlaces: 0)
                     ->sortable(),
@@ -112,7 +156,7 @@ class PaymentResource extends Resource
                         PaymentStatus::PAID   => 'success',
                         PaymentStatus::UNPAID => 'danger',
                         default               => 'warning'
-                    }),
+                    })
             ])
             ->filters([
                 SelectFilter::make('status')

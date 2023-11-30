@@ -20,6 +20,6 @@ class ListPayments extends ListRecords
 
     protected function getTableQuery(): Builder
     {
-        return parent::getTableQuery()->where('client_id', auth()->id())->withoutGlobalScopes();
+        return parent::getTableQuery()->parents()->where('client_id', auth()->id())->withoutGlobalScopes();
     }
 }

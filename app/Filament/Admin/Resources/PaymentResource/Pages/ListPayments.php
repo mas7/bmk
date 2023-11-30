@@ -6,6 +6,7 @@ use App\Enums\PaymentStatus;
 use App\Filament\Admin\Resources\PaymentResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 use pxlrbt\FilamentExcel\Actions\Pages\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -13,6 +14,11 @@ use pxlrbt\FilamentExcel\Exports\ExcelExport;
 class ListPayments extends ListRecords
 {
     protected static string $resource = PaymentResource::class;
+
+    protected function getTableQuery(): Builder
+    {
+        return parent::getTableQuery()->parents()->withoutGlobalScopes();
+    }
 
     protected function getHeaderActions(): array
     {
