@@ -24,6 +24,12 @@ class CreateTicket extends CreateRecord
         /** @var Ticket $ticket */
         $ticket = $user->tickets()->create($data);
 
+        foreach ($data['service_ids'] as $serviceId) {
+            $ticket->ticketServices()->create([
+                'service_id' => $serviceId
+            ]);
+        }
+
         return $ticket;
     }
 }

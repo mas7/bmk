@@ -37,7 +37,7 @@ class User extends Authenticatable implements FilamentUser
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'password'          => 'hashed',
     ];
 
     public function properties(): HasMany
@@ -93,6 +93,11 @@ class User extends Authenticatable implements FilamentUser
             );
     }
 
+    public function scopeNotContractor(Builder $query): Builder
+    {
+        return $query->whereRelation('roles', 'name', '!=', 'contractor');
+    }
+
     public function scopeHasProperty(Builder $query): Builder
     {
         return $query->whereHas('properties');
@@ -134,5 +139,10 @@ class User extends Authenticatable implements FilamentUser
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'client_id', 'id');
+    }
+
+    public function rentalPlans(): HasMany
+    {
+        return $this->hasMany(RentalPlan::class, 'client_id', 'id');
     }
 }

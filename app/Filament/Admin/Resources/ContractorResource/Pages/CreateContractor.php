@@ -4,6 +4,8 @@ namespace App\Filament\Admin\Resources\ContractorResource\Pages;
 
 use App\Filament\Admin\Resources\ContractorResource;
 use App\Mail\UserRegistrationMail;
+use App\Models\ContractorService;
+use App\Models\Service;
 use App\Models\User;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -19,16 +21,25 @@ class CreateContractor extends CreateRecord
     {
         /** @var User $user */
         $user = User::create([
-            'name'          => $data['name'],
-            'email'         => $data['email'],
-            'phone_number'  => $data['phone_number'],
-            'password'      => Hash::make($data['password']),
+            'name'         => $data['name'],
+            'email'        => $data['email'],
+            'phone_number' => $data['phone_number'],
+            'password'     => Hash::make($data['password']),
         ]);
 
-        $user->contractor()->create([
-            'service_category_id'   => $data['service_category'],
-            'status'                => $data['status'],
+        $contractor = $user->contractor()->create([
+            'status' => $data['status'],
         ]);
+
+        foreach (data_get($data, 'services') as $service) {
+            $service = Service::find(data_get($service, 'service_id'));
+            ContractorService::create([
+                'contractor_id'       => $contractor->id,
+                'service_id'          => $service->id,
+                'service_category_id' => $service->service_category_id,
+                'price'               => data_get($service, 'price')
+            ]);
+        }
 
         $user->assignRole('contractor');
 

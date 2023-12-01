@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Admin\Widgets\PropertyStatsOverview;
 use App\Filament\Admin\Widgets\TicketsStatsOverview;
 use App\Filament\Admin\Widgets\UsersStatsOverview;
+use App\Http\Middleware\RedirectUser;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -22,6 +23,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
+use pxlrbt\FilamentSpotlight\SpotlightPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -30,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->id('admin')
             ->path('admin')
+            ->darkMode(false)
             ->login()
             ->colors([
                 'primary' => Color::Cyan,
@@ -49,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->middleware([
                 EncryptCookies::class,
+                RedirectUser::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
                 AuthenticateSession::class,
@@ -62,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
+                SpotlightPlugin::make(),
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 BreezyCore::make()
                     ->myProfile(

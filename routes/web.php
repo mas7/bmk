@@ -1,14 +1,20 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Route::get('/email', function () {
-//     $data = (object)[
-//         'name' => 'Ahmed',
-//         'email' => 'ahmed@gmail.com',
-//         'phone_number' => '01020081375',
-//         'password' => 'ahmed@123',
-//         'role' => 2,
-//     ];
-//     return view('emails.user_registration', ['user' => $data]);
-// });
+Route::get('/', function (Request $request) {
+    if ($request->user()?->isAdmin) {
+        return redirect('/admin');
+    }
+
+    if ($request->user()?->isClient) {
+        return redirect('/client');
+    }
+
+    if ($request->user()?->isContractor) {
+        return redirect('/contractor');
+    }
+
+    return redirect('/client');
+});

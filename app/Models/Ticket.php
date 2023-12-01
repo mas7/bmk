@@ -17,29 +17,24 @@ class Ticket extends Model
 
     protected $fillable = [
         'user_id',
-        'service_category_id',
         'property_id',
         'contractor_id',
         'description',
+        'contractor_description',
         'status',
         'expected_visit_at',
         'resolution_at'
     ];
 
     protected $casts = [
-        'status' => TicketStatus::class,
+        'status'            => TicketStatus::class,
         'expected_visit_at' => 'datetime',
-        'resolution_at' => 'datetime'
+        'resolution_at'     => 'datetime'
     ];
 
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
-    }
-
-    public function serviceCategory(): BelongsTo
-    {
-        return $this->belongsTo(ServiceCategory::class);
     }
 
     public function property(): BelongsTo
@@ -83,5 +78,10 @@ class Ticket extends Model
     {
         $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('user_id', auth()->id()))
             ->when(auth()->user()->isContractor, fn(Builder $query) => $query->where('contractor_id', auth()->id()));
+    }
+
+    public function ticketServices(): HasMany
+    {
+        return $this->hasMany(TicketService::class);
     }
 }

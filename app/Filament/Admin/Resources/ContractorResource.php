@@ -7,10 +7,16 @@ use App\Enums\TicketStatus;
 use App\Filament\Contractor\Resources\Pages;
 use App\Filament\Contractor\Resources\RelationManagers;
 use App\Models\Contractor;
+use App\Models\Service;
+use App\Models\ServiceCategory;
 use App\Models\Ticket;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
@@ -19,6 +25,8 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Rawilk\FilamentPasswordInput\Password;
 
@@ -55,14 +63,55 @@ class ContractorResource extends Resource
                     })
                     ->dehydrated(fn($state) => filled($state))
                     ->required(fn(string $context): bool => $context === 'create'),
-                Select::make('service_category')
-                    ->required()
-                    ->relationship('serviceCategory', 'name')
-                    ->preload()
-                    ->searchable(),
                 Select::make('status')
                     ->required()
-                    ->options(ContractorStatus::class)
+                    ->options(ContractorStatus::class),
+                Repeater::make('services')
+                    ->label('Services')
+                    ->reorderable(false)
+                    ->schema([
+                        Grid::make([
+                            'sm'  => 1,
+                            'md'  => 1,
+                            'lg'  => 2,
+                            'xl'  => 2,
+                            '2xl' => 2,
+                        ])
+                            ->schema([
+                                Select::make('service_id')
+                                    ->label('Service')
+                                    ->required()
+                                    ->reactive()
+                                    ->options(
+                                        function (Get $get) {
+                                            $selectedServicesId = array_column($get('../../services'), 'service_id');
+                                            $selectedServicesId = array_filter($selectedServicesId, fn($id) => !is_null($id));
+                                            return ServiceCategory::query()
+                                                ->with(['services' => fn(HasMany $q) => $q->whereNotIn('id', $selectedServicesId)])->get()
+                                                ->mapWithKeys(function ($category) {
+                                                    return [
+                                                        $category->name => $category->services
+                                                            ->pluck('name', 'id')
+                                                            ->toArray()
+                                                    ];
+                                                })
+                                                ->toArray();
+                                        }
+                                    )
+                                    ->getOptionLabelUsing(fn($value): ?string => Service::find($value)?->name)
+                                    ->native(false)
+                                    ->afterStateUpdated(function (?string $state, ?string $old, Set $set) {
+                                        $price = Service::find($state)?->price ?? 0;
+                                        $set('price', $price);
+                                    }),
+                                TextInput::make('price')
+                                    ->required()
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->prefix('QR'),
+                            ])
+                    ])
+                    ->columnSpanFull()
             ]);
     }
 
@@ -81,9 +130,10 @@ class ContractorResource extends Resource
                     ->copyMessageDuration(1500),
                 TextColumn::make('user.phone_number')
                     ->label('Phone number')
+                    ->copyable()
                     ->searchable(),
-                TextColumn::make('serviceCategory.name')
-                    ->label('Service')
+                TextColumn::make('serviceCategories.name')
+                    ->label('Service Category')
                     ->badge()
                     ->color(fn(string $state): string => 'warning'),
                 TextColumn::make('status')
@@ -94,9 +144,9 @@ class ContractorResource extends Resource
                     })
             ])
             ->filters([
-                SelectFilter::make('service')
+                SelectFilter::make('services')
                     ->multiple()
-                    ->relationship('serviceCategory', 'name')
+                    ->relationship('contractorServices.service.category', 'name')
                     ->preload(),
                 SelectFilter::make('status')
                     ->multiple()
@@ -145,8 +195,8 @@ class ContractorResource extends Resource
             ->schema([
                 TextEntry::make('user.name'),
                 TextEntry::make('user.phone_number'),
-                TextEntry::make('serviceCategory.name')
-                    ->label('Service')
+                TextEntry::make('serviceCategories.name')
+                    ->label('Service Category')
                     ->badge()
                     ->color(fn(string $state): string => 'warning'),
                 TextEntry::make('status')

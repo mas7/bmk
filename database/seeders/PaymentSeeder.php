@@ -24,6 +24,7 @@ class PaymentSeeder extends Seeder
                 'client_id'      => $rentalPlan->client_id,
                 'rental_plan_id' => $rentalPlan->id,
                 'amount'         => $rentalPlan->monthly_rent,
+                'paid_amount'    => $rentalPlan->monthly_rent,
                 'payment_date'   => $initialRentDate,
                 'status'         => PaymentStatus::PAID,
             ]);
@@ -31,13 +32,27 @@ class PaymentSeeder extends Seeder
             $initialRentDate = $initialRentDate->addMonth();
         }
 
-        Payment::create([
+        $payment = Payment::create([
             'client_id'      => $rentalPlan->client_id,
             'rental_plan_id' => $rentalPlan->id,
             'amount'         => $rentalPlan->monthly_rent,
+            'paid_amount'    => 0,
             'payment_date'   => $initialRentDate,
             'status'         => PaymentStatus::UNPAID,
         ]);
 
+        $partial = $payment->partials()->create([
+            'client_id'      => $rentalPlan->client_id,
+            'rental_plan_id' => $rentalPlan->id,
+            'amount'         => 2000,
+            'paid_amount'    => 2000,
+            'payment_date'   => $initialRentDate,
+            'status'         => PaymentStatus::PAID,
+        ]);
+
+        $payment->update([
+            'paid_amount' => $partial->paid_amount,
+            'status'      => PaymentStatus::PARTIAL
+        ]);
     }
 }

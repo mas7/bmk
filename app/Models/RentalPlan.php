@@ -27,8 +27,8 @@ class RentalPlan extends Model
 
     protected $casts = [
         'start_date' => 'datetime',
-        'end_date' => 'datetime',
-        'status' => RentalPlanStatus::class,
+        'end_date'   => 'datetime',
+        'status'     => RentalPlanStatus::class,
     ];
 
     public function property(): BelongsTo
@@ -49,5 +49,11 @@ class RentalPlan extends Model
     public function scopeOwner(Builder $query): void
     {
         $query->when(auth()->user()->isClient, fn(Builder $query) => $query->where('client_id', auth()->id()));
+    }
+
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('start_date', '<=', now())
+            ->where('end_date', '>=', now());
     }
 }
