@@ -129,6 +129,7 @@ class UserResource extends Resource
         return [
             'index'  => \App\Filament\Admin\Resources\UserResource\Pages\ListUsers::route('/'),
             'create' => \App\Filament\Admin\Resources\UserResource\Pages\CreateUser::route('/create'),
+            'view'   => \App\Filament\Admin\Resources\UserResource\Pages\ViewUser::route('/{record}'),
             'edit'   => \App\Filament\Admin\Resources\UserResource\Pages\EditUser::route('/{record}/edit'),
         ];
     }
