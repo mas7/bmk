@@ -2,8 +2,10 @@
 
 namespace App\Filament\Admin\Resources\TicketResource\Pages;
 
+use App\Enums\PaymentStatus;
 use App\Filament\Admin\Resources\TicketResource;
 use App\Models\Ticket;
+use App\Models\TicketPayment;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 
@@ -21,6 +23,11 @@ class CreateTicket extends CreateRecord
                 'service_id' => $serviceId
             ]);
         }
+
+        $ticket->payment()->create([
+            'total'  => data_get($data, 'total'),
+            'status' => PaymentStatus::UNPAID->value,
+        ]);
 
         return $ticket;
     }

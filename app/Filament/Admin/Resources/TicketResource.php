@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Ticket;
 use Carbon\Carbon;
+use Filament\Forms\Components\TextInput;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -31,7 +32,9 @@ class TicketResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'Ticket Management';
+
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -96,6 +99,11 @@ class TicketResource extends Resource
                     ->required()
                     ->timezone('Asia/Qatar')
                     ->native(false),
+                TextInput::make('total')
+                    ->required()
+                    ->numeric()
+                    ->minValue(1)
+                    ->prefix('QR'),
                 Textarea::make('description')
                     ->rows(4)
                     ->placeholder('Write a small brief about the issue...')
@@ -127,6 +135,12 @@ class TicketResource extends Resource
                     ->label("Contractor")
                     ->searchable()
                     ->placeholder('Not assigned'),
+                TextColumn::make('payment.total')
+                    ->label("Total")
+                    ->prefix('QAR ')
+                    ->numeric(decimalPlaces: 0)
+                    ->placeholder(0)
+                    ->sortable(),
                 TextColumn::make("expected_visit_at")
                     ->searchable()
                     ->sortable()

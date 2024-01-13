@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\TicketResource\Pages;
 
+use App\Enums\PaymentStatus;
 use App\Enums\TicketStatus;
 use App\Filament\Admin\Resources\TicketResource;
 use App\Models\ContractorService;
@@ -35,6 +36,8 @@ class EditTicket extends EditRecord
 
         $data['service_ids'] = $ticket->ticketServices->pluck('service_id');
 
+        data_set($data, 'total', $ticket->payment?->total ?? 0);
+
         return $data;
     }
 
@@ -61,6 +64,17 @@ class EditTicket extends EditRecord
                         // Additional fields to update, if any
                     ]
                 );
+        }
+
+        if ($record->payment) {
+            $record->payment()->update([
+                'total' => data_get($data, 'total', 0),
+            ]);
+        } else {
+            $record->payment()->create([
+                'total'  => data_get($data, 'total'),
+                'status' => PaymentStatus::UNPAID->value,
+            ]);
         }
 
         return $record;

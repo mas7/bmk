@@ -40,12 +40,12 @@ class ViewUser extends ViewRecord
                 TextEntry::make('created_at')
                     ->label('Added Date')
                     ->placeholder('~'),
-                Fieldset::make('Payments')
-                    ->schema([
-                        Livewire::make(ListPayments::class, ['user' => $this->getRecord()])
-                            ->columnSpanFull()
-                    ])
-                    ->visible($this->getRecord()->isClient)
+                //Fieldset::make('Payments')
+                //    ->schema([
+                //        Livewire::make(ListPayments::class, ['user' => $this->getRecord()])
+                //            ->columnSpanFull()
+                //    ])
+                //    ->visible($this->getRecord()->isClient)
             ]);
     }
 }

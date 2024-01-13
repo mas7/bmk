@@ -16,7 +16,7 @@ class PropertyStatsOverview extends BaseWidget
         return [
             Stat::make('Properties', Property::owner()->count()),
             Stat::make('Rentals', RentalPlan::owner()->count()),
-            Stat::make('Payments', "QAR " . Payment::owner()->parents()->sum('paid_amount')),
+            //Stat::make('Payments', "QAR " . Payment::owner()->parents()->sum('paid_amount')),
         ];
     }
 }
