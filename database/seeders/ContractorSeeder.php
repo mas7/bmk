@@ -18,6 +18,13 @@ class ContractorSeeder extends Seeder
     public function run(): void
     {
         $this->createContractor(
+            'Default',
+            'default@bmkfacilities.com',
+            '00000000',
+            ContractorStatus::ACTIVE
+        );
+
+        $this->createContractor(
             'Emerald Cleaning Services Qatar',
             'info@emeraldqatar.com',
             '30001817',

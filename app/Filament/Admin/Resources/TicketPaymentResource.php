@@ -2,14 +2,18 @@
 
 namespace App\Filament\Admin\Resources;
 
+use App\Enums\PaymentStatus;
 use App\Enums\TicketPaymentStatus;
 use App\Filament\Admin\Resources\TicketPaymentResource\Pages;
 use App\Filament\Admin\Resources\TicketPaymentResource\RelationManagers;
 use App\Models\TicketPayment;
 use Carbon\Carbon;
+use Exception;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
@@ -59,7 +63,7 @@ class TicketPaymentResource extends Resource
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public static function table(Table $table): Table
     {
@@ -144,5 +148,33 @@ class TicketPaymentResource extends Resource
             'create' => Pages\CreateTicketPayment::route('/create'),
             'edit'   => Pages\EditTicketPayment::route('/{record}/edit'),
         ];
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('id')
+                    ->label('Number')
+                    ->formatStateUsing(fn($state): string => "#$state"),
+                TextEntry::make("ticket.id")
+                    ->label('Ticket ID')
+                    ->formatStateUsing(fn($state): string => "#$state"),
+                TextEntry::make("ticket.contractor.name")
+                    ->label('Contractor'),
+                TextEntry::make('total')
+                    ->label('Total')
+                    ->prefix('QAR ')
+                    ->numeric(decimalPlaces: 0),
+                TextEntry::make('status')
+                    ->badge()
+                    ->color(fn(TicketPaymentStatus $state): string => match ($state) {
+                        TicketPaymentStatus::PAID   => 'success',
+                        TicketPaymentStatus::UNPAID => 'danger',
+                    }),
+                TextEntry::make("created_at")
+                    ->label("Created At")
+                    ->placeholder('~'),
+            ]);
     }
 }
