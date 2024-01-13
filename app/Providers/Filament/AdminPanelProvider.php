@@ -6,6 +6,7 @@ use App\Filament\Admin\Widgets\PropertyStatsOverview;
 use App\Filament\Admin\Widgets\TicketsStatsOverview;
 use App\Filament\Admin\Widgets\UsersStatsOverview;
 use App\Http\Middleware\RedirectUser;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -65,16 +66,16 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
+            ->navigationGroups([
+                'Ticket Management',
+                'Contractors',
+                'Properties',
+            ])
             ->plugins([
                 SpotlightPlugin::make(),
-                \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
+                FilamentShieldPlugin::make(),
                 BreezyCore::make()
-                    ->myProfile(
-                        shouldRegisterUserMenu: true,    // Sets the 'account' link in the panel User Menu (default = true)
-                        shouldRegisterNavigation: false, // Adds a main navigation item for the My Profile page (default = false)
-                        hasAvatars: false,               // Enables the avatar upload form component (default = false)
-                        slug: 'my-profile'                     // Sets the slug for the profile page (default = 'my-profile')
-                    )
+                    ->myProfile()
                     ->passwordUpdateRules(
                         rules: [
                             Password::default()->mixedCase()
