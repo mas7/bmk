@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\TicketStatus;
 use App\Filament\Resources\TicketResource\Pages;
 use App\Filament\Resources\TicketResource\RelationManagers;
+use App\Models\Contractor;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use App\Models\Ticket;
@@ -86,6 +87,7 @@ class TicketResource extends Resource
                         titleAttribute: 'name',
                         modifyQueryUsing: fn(Builder $query, Get $get) => $query->contractors(serviceCategoryId: $get('service_category_id'))
                     )
+                    ->default(Contractor::query()->find(1)->user_id)
                     ->preload()
                     ->searchable()
                     ->native(false),
