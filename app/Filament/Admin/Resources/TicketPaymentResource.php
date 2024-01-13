@@ -6,6 +6,7 @@ use App\Enums\TicketPaymentStatus;
 use App\Filament\Admin\Resources\TicketPaymentResource\Pages;
 use App\Filament\Admin\Resources\TicketPaymentResource\RelationManagers;
 use App\Models\TicketPayment;
+use Carbon\Carbon;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -14,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -56,6 +58,9 @@ class TicketPaymentResource extends Resource
             ]);
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function table(Table $table): Table
     {
         return $table
@@ -93,7 +98,14 @@ class TicketPaymentResource extends Resource
                     ->placeholder('~'),
             ])
             ->filters([
-
+                DateRangeFilter::make('created_at')
+                    ->label('Created At')
+                    ->startDate(Carbon::now())
+                    ->setTimePickerOption(false)
+                    ->setAutoApplyOption(true)
+                    ->setLinkedCalendarsOption(false)
+                    ->withIndicator()
+                    ->useRangeLabels(),
             ])
             ->actions([
                 ActionGroup::make([
