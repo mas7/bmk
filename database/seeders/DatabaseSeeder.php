@@ -20,9 +20,10 @@ class DatabaseSeeder extends Seeder
             ContractorServiceSeeder::class,
             PropertySeeder::class,
             RentalPlanSeeder::class,
-            PaymentSeeder::class,
+            //PaymentSeeder::class,
+            TicketSeeder::class,
         ]);
 
-        DB::unprepared(file_get_contents(database_path('dumps/tickets.sql')));
+        //DB::unprepared(file_get_contents(database_path('dumps/tickets.sql')));
     }
 }

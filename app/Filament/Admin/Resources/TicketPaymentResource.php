@@ -100,10 +100,6 @@ class TicketPaymentResource extends Resource
             ->filters([
                 DateRangeFilter::make('created_at')
                     ->label('Created At')
-                    ->startDate(Carbon::now())
-                    ->setTimePickerOption(false)
-                    ->setAutoApplyOption(true)
-                    ->setLinkedCalendarsOption(false)
                     ->withIndicator()
                     ->useRangeLabels(),
             ])
