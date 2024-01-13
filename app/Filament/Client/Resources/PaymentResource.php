@@ -121,4 +121,9 @@ class PaymentResource extends Resource
                     }),
             ]);
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 }

@@ -4,6 +4,10 @@ namespace App\Filament\Admin\Resources;
 
 use App\Enums\ContractorStatus;
 use App\Enums\TicketStatus;
+use App\Filament\Admin\Resources\ContractorResource\Pages\CreateContractor;
+use App\Filament\Admin\Resources\ContractorResource\Pages\EditContractor;
+use App\Filament\Admin\Resources\ContractorResource\Pages\ListContractors;
+use App\Filament\Admin\Resources\ContractorResource\Pages\ViewContractor;
 use App\Filament\Contractor\Resources\Pages;
 use App\Filament\Contractor\Resources\RelationManagers;
 use App\Models\Contractor;
@@ -178,9 +182,10 @@ class ContractorResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => \App\Filament\Admin\Resources\ContractorResource\Pages\ListContractors::route('/'),
-            'create' => \App\Filament\Admin\Resources\ContractorResource\Pages\CreateContractor::route('/create'),
-            'edit'   => \App\Filament\Admin\Resources\ContractorResource\Pages\EditContractor::route('/{record}/edit'),
+            'index'  => ListContractors::route('/'),
+            'create' => CreateContractor::route('/create'),
+            'view'   => ViewContractor::route('/{record}'),
+            'edit'   => EditContractor::route('/{record}/edit'),
         ];
     }
 
